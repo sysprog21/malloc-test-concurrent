@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     /* get elapsed time */
     t1.tv_sec -= t0.tv_sec;
     if (t1.tv_usec < t0.tv_usec) {
-        t1.tv_sec -=1;
+        t1.tv_sec -= 1;
         t1.tv_usec += 1000000 - t0.tv_usec;
     } else {
         t1.tv_usec -= t0.tv_usec;
@@ -125,8 +125,8 @@ static void *membench(void *arg)
 
         for (int i = 0; i < count; i++) {
             size[i] = (rand() % (alloc_size * 10) + 1) * 100 * 1000;
-            mem[i]  = (int *) malloc( size[i] );
 
+            mem[i]  = (int *) malloc(size[i]);
             if (!mem[i]) {
                 puts("Fail to allocate memory.");
                 return NULL;
