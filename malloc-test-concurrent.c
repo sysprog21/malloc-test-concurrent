@@ -40,7 +40,6 @@ int main(int argc, char **argv)
     };
 
     int option_index = 0;
-
     while ((c = getopt_long(argc, argv, "t:s:c:l:v",
                             long_options, &option_index)) != -1) {
         switch (c) {
@@ -129,7 +128,7 @@ static void *membench(void *arg)
             mem[i]  = (int *) malloc( size[i] );
 
             if (!mem[i]) {
-                puts("can't malloc");
+                puts("Fail to allocate memory.");
                 return NULL;
             }
             memset(mem[i], 1, size[i]);
