@@ -6,10 +6,12 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/syscall.h>
-#include <sys/time.h>
+
+#include <time.h>
 #include <pthread.h>
 
 static void *membench(void *arg);
+static double diff_in_second(struct timespec t1, struct timespec t2);
 
 typedef struct {
     int alloc_size;
@@ -68,14 +70,14 @@ int main(int argc, char **argv)
     }
 
     pthread_t p[thread_num];
-    struct timeval t0, t1;
+    struct timespec start, end;
 
     printf("Number of threads : %d\n", thread_num);
     printf("Malloc size : %d MB\n", thread_args.alloc_size);
     printf("Number of councurrent malloc per thread: %d\n", thread_args.count);
     printf("Number of loops per thread : %d\n", thread_args.loop);
 
-    gettimeofday(&t0, NULL);
+    clock_gettime(CLOCK_REALTIME, &start);
 
     for (int i = 0; i < thread_num; i++)
         pthread_create(&p[i], NULL, membench, &thread_args);
@@ -83,18 +85,9 @@ int main(int argc, char **argv)
     for (int i = 0; i < thread_num; i++)
         pthread_join(p[i], NULL);
 
-    gettimeofday(&t1, NULL);
+    clock_gettime(CLOCK_REALTIME, &end);
 
-    /* get elapsed time */
-    t1.tv_sec -= t0.tv_sec;
-    if (t1.tv_usec < t0.tv_usec) {
-        t1.tv_sec -= 1;
-        t1.tv_usec += 1000000 - t0.tv_usec;
-    } else {
-        t1.tv_usec -= t0.tv_usec;
-    }
-
-    printf("%d.%06d sec\n", (int) t1.tv_sec, (int) t1.tv_usec);
+    printf("%lf sec\n", diff_in_second(start, end));
 
     exit(EXIT_SUCCESS);
 }
@@ -148,4 +141,17 @@ static void *membench(void *arg)
         }
     }
     return NULL;
+}
+
+static double diff_in_second(struct timespec t1, struct timespec t2)
+{
+    struct timespec diff;
+    if (t2.tv_nsec-t1.tv_nsec < 0) {
+        diff.tv_sec  = t2.tv_sec - t1.tv_sec - 1;
+        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec + 1000000000;
+    } else {
+        diff.tv_sec  = t2.tv_sec - t1.tv_sec;
+        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    }
+    return (diff.tv_sec + diff.tv_nsec / 1000000000.0);
 }
