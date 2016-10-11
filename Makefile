@@ -1,6 +1,12 @@
 EXEC = malloc-test-concurrent
+
+GIT_HOOKS := .git/hooks/pre-commit
 .PHONY: all
-all: $(EXEC)
+all: $(GIT_HOOKS) $(EXEC)
+
+$(GIT_HOOKS):
+	@scripts/install-git-hooks
+	@echo
 
 CC ?= gcc
 CFLAGS = -std=gnu99 -Wall -O2 -g
